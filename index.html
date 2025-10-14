@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium 3D Shirt Customizer</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+        :root {
+            --primary-color: #007bff;
+            --panel-bg: rgba(255, 255, 255, 0.8);
+            --text-color: #333;
+            --shadow-color: rgba(0,0,0,0.1);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: #e9eef2;
+            overflow: hidden;
+        }
+
+        canvas { display: block; }
+
+        #loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--text-color);
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        #customize-btn {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 101;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        #customize-btn:hover {
+            transform: translateX(-50%) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 123, 255, 0.4);
+        }
+
+        #customizer-panel {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background-color: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px var(--shadow-color);
+            width: auto;
+            max-width: 90vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transform: translate(-50%, 20px);
+            transition: all 0.4s ease;
+        }
+
+        #customizer-panel.panel-open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%);
+        }
+
+        #parts-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 20px;
+        }
+        
+        .part-button {
+            background: #fff;
+            border: 2px solid transparent;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .part-button.active, .part-button:hover {
+            background: var(--primary-color);
+            color: #fff;
+            border-color: var(--primary-color);
+        }
+
+        .color-palette {
+            display: none; /* Palettes are hidden by default */
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .color-palette.active {
+            display: flex; /* Show the active palette */
+        }
+        
+        .color-swatch {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 4px solid #fff;
+            box-shadow: 0 2px 8px var(--shadow-color);
+            transition: all 0.2s ease;
+        }
+        .color-swatch:hover { transform: scale(1.1); }
+        .color-swatch.active {
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            border-color: #333;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="loader">Loading Model...</div>
+    <div id="customizer-panel">
+        <div id="parts-container"></div>
+        <div id="palettes-container"></div>
+    </div>
+    <button id="customize-btn" style="display: none;">Customize</button>
+
+    <canvas id="c"></canvas>
+    <script type="importmap">
+        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+    </script>
+    <script type="module" src="./script.js"></script>
+</body>
+</html>
