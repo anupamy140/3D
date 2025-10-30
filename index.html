@@ -1,151 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium 3D Shirt Customizer</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Premium 3D Shirt Customizer</title>
 
-        :root {
-            --primary-color: #007bff;
-            --panel-bg: rgba(255, 255, 255, 0.8);
-            --text-color: #333;
-            --shadow-color: rgba(0,0,0,0.1);
-        }
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+    :root {
+      --primary: #0d6efd;
+      --panel: rgba(255,255,255,0.9);
+      --bg: #e9eef2;
+      --ink: #1b1e26;
+      --shadow: rgba(0,0,0,0.14);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: 'Poppins', sans-serif;
+      background: var(--bg); color: var(--ink); overflow: hidden;
+    }
+    canvas { display: block; }
 
-        body {
-            margin: 0;
-            font-family: 'Poppins', sans-serif;
-            background-color: #e9eef2;
-            overflow: hidden;
-        }
+    /* Loader */
+    #loader {
+      position: absolute; inset: 0; display: grid; place-items: center;
+      font-weight: 700; font-size: 20px; color: #333; z-index: 50;
+    }
 
-        canvas { display: block; }
+    /* Floating gear button */
+    #gearBtn {
+      position: absolute; left: 18px; bottom: 18px; z-index: 120;
+      width: 54px; height: 54px; border-radius: 50%;
+      background: var(--primary); color: #fff; border: none;
+      display: grid; place-items: center; font-size: 22px; cursor: pointer;
+      box-shadow: 0 10px 25px rgba(13,110,253,0.35);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    #gearBtn:hover { transform: scale(1.05); box-shadow: 0 14px 30px rgba(13,110,253,0.45); }
 
-        #loader {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: var(--text-color);
-            font-size: 24px;
-            font-weight: 600;
-        }
+    /* Left sidebar */
+    #sidebar {
+      position: absolute; left: 0; top: 0; bottom: 0; width: 320px;
+      background: var(--panel); backdrop-filter: blur(10px);
+      box-shadow: 4px 0 24px var(--shadow);
+      padding: 16px 14px; z-index: 110;
+      transform: translateX(-100%); transition: transform .3s ease;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    #sidebar.open { transform: translateX(0); }
 
-        #customize-btn {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 101;
-            padding: 15px 30px;
-            font-size: 18px;
-            font-weight: 600;
-            color: #fff;
-            background-color: var(--primary-color);
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
-            transition: all 0.3s ease;
-        }
-        #customize-btn:hover {
-            transform: translateX(-50%) scale(1.05);
-            box-shadow: 0 8px 20px rgba(0, 123, 255, 0.4);
-        }
+    .section {
+      background: #fff; border-radius: 14px; padding: 12px 12px;
+      box-shadow: 0 4px 14px var(--shadow);
+    }
+    .section h3 {
+      margin: 0 0 10px; font-size: 14px; letter-spacing: .2px; opacity: .8;
+    }
 
-        #customizer-panel {
-            position: absolute;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            background-color: var(--panel-bg);
-            backdrop-filter: blur(12px);
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px var(--shadow-color);
-            width: auto;
-            max-width: 90vw;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            opacity: 0;
-            visibility: hidden;
-            transform: translate(-50%, 20px);
-            transition: all 0.4s ease;
-        }
+    .row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .row:last-child { margin-bottom: 0; }
+    select, input[type="color"], input[type="range"] {
+      width: 100%; padding: 8px 10px; border: 1px solid #d8dbe1; border-radius: 10px; background: #fff; font-weight: 600;
+    }
+    .value { width: 54px; text-align: right; font-size: 12px; opacity: .7; font-weight: 700; }
 
-        #customizer-panel.panel-open {
-            opacity: 1;
-            visibility: visible;
-            transform: translateX(-50%);
-        }
+    /* Quick color presets */
+    .swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+    .swatch {
+      width: 26px; height: 26px; border-radius: 50%; border: 3px solid #fff; cursor: pointer;
+      box-shadow: 0 2px 8px var(--shadow);
+    }
 
-        #parts-container {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 20px;
-        }
-        
-        .part-button {
-            background: #fff;
-            border: 2px solid transparent;
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .part-button.active, .part-button:hover {
-            background: var(--primary-color);
-            color: #fff;
-            border-color: var(--primary-color);
-        }
+    /* Action buttons */
+    .btns { display: flex; gap: 10px; }
+    .btn {
+      flex: 1; padding: 10px 12px; border: none; border-radius: 10px; cursor: pointer;
+      color: #fff; font-weight: 700; box-shadow: 0 8px 18px var(--shadow);
+      background: var(--primary);
+    }
+    .btn.secondary { background: #3b3f4a; }
 
-        .color-palette {
-            display: none; /* Palettes are hidden by default */
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        .color-palette.active {
-            display: flex; /* Show the active palette */
-        }
-        
-        .color-swatch {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 4px solid #fff;
-            box-shadow: 0 2px 8px var(--shadow-color);
-            transition: all 0.2s ease;
-        }
-        .color-swatch:hover { transform: scale(1.1); }
-        .color-swatch.active {
-            transform: scale(1.15);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            border-color: #333;
-        }
+    /* Bottom swatch panel (your original UI) */
+    #customizer-panel {
+      position: absolute; bottom: 90px; left: 50%; transform: translateX(-50%);
+      z-index: 100; background: var(--panel); backdrop-filter: blur(12px);
+      padding: 14px; border-radius: 14px; box-shadow: 0 10px 40px var(--shadow);
+      display: flex; flex-direction: column; align-items: center;
+      opacity: 0; visibility: hidden; transition: all .3s ease; max-width: 92vw;
+    }
+    #customizer-panel.panel-open { opacity: 1; visibility: visible; }
+    #parts-container { display: flex; flex-wrap: wrap; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid #e2e5ec; margin-bottom: 10px; }
+    .part-button {
+      background: #fff; border: 2px solid transparent; padding: 8px 12px; border-radius: 20px; font-weight: 700; cursor: pointer;
+      box-shadow: 0 2px 8px var(--shadow); font-size: 12px;
+    }
+    .part-button.active, .part-button:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .color-palette { display: none; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .color-palette.active { display: flex; }
+    .color-swatch { width: 30px; height: 30px; border-radius: 50%; border: 4px solid #fff; box-shadow: 0 2px 8px var(--shadow); cursor: pointer; }
 
-    </style>
+    /* Toggle button for bottom panel */
+    #toggleBottom {
+      position: absolute; left: 50%; transform: translateX(-50%); bottom: 28px;
+      z-index: 105; padding: 11px 18px; border-radius: 28px; border: none; cursor: pointer;
+      background: var(--primary); color: #fff; font-weight: 800; letter-spacing: .2px;
+      box-shadow: 0 8px 22px rgba(13,110,253,0.35);
+    }
+  </style>
 </head>
 <body>
-    <div id="loader">Loading Model...</div>
-    <div id="customizer-panel">
-        <div id="parts-container"></div>
-        <div id="palettes-container"></div>
-    </div>
-    <button id="customize-btn" style="display: none;">Customize</button>
+  <div id="loader">Loading model…</div>
 
-    <canvas id="c"></canvas>
-    <script type="importmap">
-        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
-    </script>
-    <script type="module" src="./script.js"></script>
+  <!-- Floating gear to open/close sidebar -->
+  <button id="gearBtn" title="Customize">⚙️</button>
+
+  <!-- Left sidebar (collapsible) -->
+  <aside id="sidebar">
+    <div class="section">
+      <h3>Fabric</h3>
+      <div class="row">
+        <select id="fabric">
+          <option value="cotton">Cotton</option>
+          <option value="silk">Silk</option>
+          <option value="denim">Denim</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Color</h3>
+      <div class="row"><input type="color" id="color" value="#ffffff"></div>
+      <div class="swatches" id="quickSwatches"></div>
+    </div>
+
+    <div class="section">
+      <h3>Surface</h3>
+      <div class="row">
+        <label>Roughness</label>
+        <input type="range" min="0" max="1" step="0.01" id="roughness">
+        <div class="value" id="roughnessV">0.68</div>
+      </div>
+      <div class="row">
+        <label>Sheen</label>
+        <input type="range" min="0" max="1" step="0.01" id="sheen">
+        <div class="value" id="sheenV">0.20</div>
+      </div>
+      <div class="row">
+        <label>Sheen Rough.</label>
+        <input type="range" min="0" max="1" step="0.01" id="sheenR">
+        <div class="value" id="sheenRV">0.90</div>
+      </div>
+      <div class="row">
+        <label>Normal</label>
+        <input type="range" min="0" max="2" step="0.01" id="normalScale">
+        <div class="value" id="normalV">0.80</div>
+      </div>
+      <div class="row">
+        <label>Weave</label>
+        <input type="range" min="1" max="6" step="1" id="weaveRepeat">
+        <div class="value" id="weaveV">2</div>
+      </div>
+    </div>
+
+    <div class="section btns">
+      <button class="btn" id="reset">Reset</button>
+      <button class="btn secondary" id="randomize">Randomize</button>
+    </div>
+  </aside>
+
+  <!-- Bottom part-color panel (kept) -->
+  <div id="customizer-panel">
+    <div id="parts-container"></div>
+    <div id="palettes-container"></div>
+  </div>
+  <button id="toggleBottom">Customize Parts</button>
+
+  <!-- Canvas -->
+  <canvas id="c"></canvas>
+
+  <!-- Modules -->
+  <script type="importmap">
+    { "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }}
+  </script>
+  <script type="module" src="./script.js"></script>
 </body>
 </html>
